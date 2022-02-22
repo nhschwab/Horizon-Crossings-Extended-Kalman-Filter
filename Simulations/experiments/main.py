@@ -5,7 +5,7 @@ from sim_xray_source import Xray_Source
 
 # main function
 def main():
-    instance = Xray_Source()
+    instance = Xray_Source(source_name='Example')
     instance.show_loc()
     instance.show_spectrum()
 

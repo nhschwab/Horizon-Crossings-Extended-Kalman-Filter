@@ -74,13 +74,17 @@ class Xray_Source():
         # naming convention follows Horizon Crossings source code: https://github.com/nruhl25/HorizonCrossings-
         self.dict = {'Source_Name': source_name}
         
-        # positional information
+        # POSITIONAL INFORMATION OF SOURCE
         self.dict['RA_SOURCE'] = np.deg2rad(self.ra)
         self.dict['DEC_SOURCE'] = np.deg2rad(self.dec)
         self.dict['starECI'] = tools.celestial_to_geocentric(self.dict['RA_SOURCE'], self.dict['DEC_SOURCE'])
         self.dict['starECI_proj'] = None
         self.dict['msis_density_string'] = 'NO_DENSITY_MODEL_YET'
 
+        # ORBITAL MODEL
+        self.dict['inclination'] = 180 * np.random.randf()
         
+
+        # for simulated Horizon Crossings, we choose an arbitary point in the orbit to correspond to the epoch
 
 
