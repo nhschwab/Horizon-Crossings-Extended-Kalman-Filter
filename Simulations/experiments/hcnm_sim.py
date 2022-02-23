@@ -40,4 +40,5 @@ class HCNM_Sim():
         self.inclination = 180 * np.random.randf()
         self.raan = 360 * np.random.ranf()
         self.aop = 360 * np.random.ranf()
+        self.h_unit = 
 
