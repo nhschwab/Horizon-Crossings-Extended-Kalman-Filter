@@ -4,6 +4,7 @@
 # libraries
 import numpy as np
 from numpy.linalg import norm
+import math as m
 
 # constants
 G = 6.6743 * 10 ** (-11)     # Nm^2/kg^2, Gravitational constant
@@ -28,3 +29,26 @@ def a_to_period(a_km):
     a_m = a_km * 10 ** 3   # convert a to meters
     T = np.sqrt((4 * np.pi ** 2 * a_m ** 3) / (G * M_EARTH))   # sec
     return T
+
+def get_Q_matrix(i, raan, aop):
+    Q = np.array([[m.cos(raan) * m.cos(aop) - m.sin(raan) * m.sin(aop) * m.cos(i),
+                   m.sin(raan) * m.cos(aop) + m.cos(raan) * m.cos(i) * m.sin(aop),
+                   m.sin(i) * m.sin(aop)],
+                  [-m.cos(raan) * m.sin(aop) - m.sin(raan) * m.cos(i) * m.cos(aop),
+                   -m.sin(raan) * m.sin(aop) + m.cos(raan) * m.cos(i) * m.cos(aop),
+                   m.sin(i) * m.cos(aop)],
+                  [m.sin(raan) * m.sin(i),
+                   -m.cos(raan) * m.sin(i),
+                   m.cos(i)]])
+    return Q
+
+def get_position_from_keplerian(omega, Q, R, T):
+    t_array = np.arange(0, T)
+    
+    perifocal_positions = R * np.array([[np.cos(omega * t) for t in t_array], 
+                                    [np.sin(omega * t) for t in t_array], 
+                                    [0 for t in t_array]])
+    
+    ECI_positions = Q.T @ perifocal_positions
+
+    return ECI_positions
