@@ -52,3 +52,10 @@ def get_position_from_keplerian(omega, Q, R, T):
     ECI_positions = Q.T @ perifocal_positions
 
     return ECI_positions
+
+# Function to project the source onto the plane of the orbit
+def proj_on_orbit(r_source, h_unit):
+    r_prime_source = r_source - h_unit * np.dot(r_source, h_unit)   # project on orbit plane
+    r_prime_source = r_prime_source / norm(r_prime_source)  # normalize the vector
+    return r_prime_source
+

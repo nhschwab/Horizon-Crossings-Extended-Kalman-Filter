@@ -14,7 +14,7 @@ class: HCNM_Sim
 
     generates a simulated oribital model with artifical horizon crossings
 
-    User instantiates an object of the class by passing an array of sources
+    User instantiates an object of the class by passing an X-ray source, which is an object o the class Xray_Source
 
     The user can manually alter the attributes of object or leave as is for random orbital parameters
 
@@ -29,12 +29,7 @@ arguments:
 
 class HCNM_Sim():
 
-    def __init__(self, sources):
-
-        self.sources = sources
-        
-        # number of considered sources
-        self.N = len(self.sources)
+    def __init__(self, source):
 
         # ORBITAL PARAMETERS
         
@@ -43,7 +38,7 @@ class HCNM_Sim():
         # orbital period
         self.T = tools.a_to_period(self.R_orbit)
         # angular velocity
-        self.OMEGA_ORG = 2 * np.pi / self.T
+        self.OMEGA_ORB = 2 * np.pi / self.T
 
         # KEPLERIAN ELEMENTS
         self.inclination = 180 * np.random.ranf()
@@ -62,7 +57,11 @@ class HCNM_Sim():
         # Q matrix: transformation from perifical frame to planet-centered coordinate frame
         self.Q = tools.get_Q_matrix(self.inclination, self.raan, self.aop)
 
-        self.positions = tools.get_position_from_keplerian(self.OMEGA_ORG, self.Q, self.R_orbit, self.T)
+        self.positions = tools.get_position_from_keplerian(self.OMEGA_ORB, self.Q, self.R_orbit, self.T)
+
+        # information about the source necessary for geometric computation
+        self.starECI = tools.celestial_to_geocentric(source.ra, source.dec)
+        self.starECI_proj = tools.proj_on_orbit(self.starECI, self.h_unit)
 
 
     # method to plot orbital model
@@ -73,10 +72,13 @@ class HCNM_Sim():
         ax.plot(self.positions[0], self.positions[1], self.positions[2])
         plt.show()
 
+        return None
+
 
 if __name__ == "__main__":
-    obj = HCNM_Sim([])
-    print(obj.plot_orbit())
+    source = Xray_Source('simulated source')
+    obj = HCNM_Sim(source)
+    obj.plot_orbit()
 
 
 
