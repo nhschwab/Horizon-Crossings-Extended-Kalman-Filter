@@ -105,14 +105,12 @@ class LocateR0hc:
         g_unit_proj = np.cross(self.obs_dict['starECI_proj'], self.h_unit_approx)
         self.A_2d = np.sqrt(self.R_orbit_approx ** 2 - tools.R_EARTH ** 2)
         self.r0_2d = tools.R_EARTH * g_unit_proj - self.A_2d * self.obs_dict['starECI_proj']
-        r0_guess_indices = np.isclose(self.orbit_model, self.r0_2d, 0.015)
+        r0_guess_indices = np.isclose(self.orbit_model, self.r0_2d, 0.05)
 
         # 1.5% corresponds to ~50km (or more depending on x,y,z component)
         # depends on |r0_3d-r0_2d|
 
         t0_guess_list = []  # indices in orbit_vec
-
-        print(r0_guess_indices)
 
         for index, value in enumerate(r0_guess_indices):
             if all(value) == True:

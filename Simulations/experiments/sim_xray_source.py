@@ -55,8 +55,8 @@ class Xray_Source():
         self.spectrum = np.concatenate((self.spectrum, np.abs(np.random.normal(loc=2, scale=3, size=s))))
 
         # generate random celestial coordinates
-        self.ra = 83.63317 # 360 * np.random.ranf()
-        self.dec = 22.01453 # 180 * np.random.ranf() - 90
+        self.ra = np.deg2rad(360 * np.random.ranf())
+        self.dec = np.deg2rad(180 * np.random.ranf() - 90)
 
     
     def show_spectrum(self):

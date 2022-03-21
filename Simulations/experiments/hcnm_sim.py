@@ -27,7 +27,7 @@ arguments:
 
 class HCNM_Sim():
 
-    def __init__(self, source):
+    def __init__(self, source, inclination=None, raan=None):
 
         self.source_name = source.source_name
 
@@ -41,22 +41,23 @@ class HCNM_Sim():
         self.OMEGA_ORB = 2 * np.pi / self.T
 
         # KEPLERIAN ELEMENTS
-        self.inclination = 51.6 # 180 * np.random.ranf()
-        self.raan = 360 * np.random.ranf()
-        self.aop = 0 # CIRCULAR ORBIT
-        
-        # the z-component of the pole vector is defined as the cos of the inclination
-        # the other components are arbitrarily defined
-        a = np.random.ranf()
-        b = np.sqrt(1 - np.cos(self.inclination)**2 - a**2)
-        self.h_unit = np.array([a, b, np.cos(self.inclination)])
+        if inclination==None:
+            self.inclination =  180 * np.random.ranf()
+        else:
+            self.inclination = np.deg2rad(inclination)
 
-        # the x-component of the line of nodes is defined as the cos of the raan
-        # the other components are arbitrarily defined
-        self.n_unit = np.array([np.cos(self.raan), np.random.ranf(), np.random.ranf()])
+        if raan==None:
+            self.raan = 360 * np.random.ranf()
+        else:
+            self.raan = np.deg2rad(raan)
+
+        self.aop = 0 # CIRCULAR ORBIT
 
         # Q matrix: transformation from perifical frame to planet-centered coordinate frame
         self.Q = tools.get_Q_matrix(self.inclination, self.raan, self.aop)
+
+        # normalized pole vector is the third row of the Q matrix
+        self.h_unit = self.Q[2]
 
         self.positions = tools.get_position_from_keplerian(self.OMEGA_ORB, self.Q, self.R_orbit, self.T)
 
@@ -65,12 +66,18 @@ class HCNM_Sim():
         self.starECI_proj = tools.proj_on_orbit(self.starECI, self.h_unit)
 
 
-    # method to plot orbital model
-    def plot_orbit(self):
+    # method to plot orbital model and grazing point of source
+    def plot_orbit(self, r0):
     
         fig = plt.figure(figsize=(4,4))
         ax = fig.add_subplot(111, projection='3d')
         ax.plot(self.positions[0], self.positions[1], self.positions[2])
+        ax.scatter(r0[0], r0[1], r0[2], c='red', label='r0')
+        ax.set_title(f"Simulated Orbital Trajectory and Computed r0 of {self.source_name}")
+        ax.set_xlabel("km")
+        ax.set_ylabel("km")
+        ax.set_zlabel("km")
+        plt.legend()
         plt.show()
 
         return None
