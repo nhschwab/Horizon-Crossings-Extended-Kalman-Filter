@@ -4,8 +4,6 @@
 import numpy as np 
 import matplotlib.pyplot as plt
 import tools
-from orbital import earth, KeplerianElements, plot3d, earth_sidereal_day
-from scipy.constants import kilo
 
 from sim_xray_source import Xray_Source
 
@@ -31,6 +29,8 @@ class HCNM_Sim():
 
     def __init__(self, source):
 
+        self.source_name = source.source_name
+
         # ORBITAL PARAMETERS
         
         # orbital radius
@@ -41,14 +41,15 @@ class HCNM_Sim():
         self.OMEGA_ORB = 2 * np.pi / self.T
 
         # KEPLERIAN ELEMENTS
-        self.inclination = 180 * np.random.ranf()
+        self.inclination = 51.6 # 180 * np.random.ranf()
         self.raan = 360 * np.random.ranf()
         self.aop = 0 # CIRCULAR ORBIT
         
         # the z-component of the pole vector is defined as the cos of the inclination
         # the other components are arbitrarily defined
-        h = np.array([np.random.ranf(), np.random.ranf(), np.cos(self.inclination)])
-        self.h_unit = h / np.sqrt(np.sum(h**2)) # normalize the vector
+        a = np.random.ranf()
+        b = np.sqrt(1 - np.cos(self.inclination)**2 - a**2)
+        self.h_unit = np.array([a, b, np.cos(self.inclination)])
 
         # the x-component of the line of nodes is defined as the cos of the raan
         # the other components are arbitrarily defined
@@ -73,6 +74,22 @@ class HCNM_Sim():
         plt.show()
 
         return None
+
+    # method generates a dict object that is the necessary input for LocateR0hc
+    # this method should only be called once all orbital parameters are set for the simulation
+    def generate_dict(self):
+        d = {'Source_Name': self.source_name}
+        
+        d['T'] = self.T
+        d['h_unit'] = self.h_unit
+        d['R_orbit'] = self.R_orbit
+        d['OMEGA_ORB'] = self.OMEGA_ORB
+        d['Q'] = self.Q
+        d['starECI_proj'] = self.starECI_proj
+        d['starECI'] = self.starECI
+
+        return d
+
 
 
 if __name__ == "__main__":

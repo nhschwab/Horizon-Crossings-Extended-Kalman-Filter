@@ -55,8 +55,8 @@ class Xray_Source():
         self.spectrum = np.concatenate((self.spectrum, np.abs(np.random.normal(loc=2, scale=3, size=s))))
 
         # generate random celestial coordinates
-        self.ra = 360 * np.random.ranf()
-        self.dec = 180 * np.random.ranf() - 90
+        self.ra = 83.63317 # 360 * np.random.ranf()
+        self.dec = 22.01453 # 180 * np.random.ranf() - 90
 
     
     def show_spectrum(self):
@@ -69,22 +69,5 @@ class Xray_Source():
 
     def show_loc(self):
         print(self.ra, self.dec)
-
-    def generate_dict(self):
-        # naming convention follows Horizon Crossings source code: https://github.com/nruhl25/HorizonCrossings-
-        self.dict = {'Source_Name': source_name}
-        
-        # POSITIONAL INFORMATION OF SOURCE
-        self.dict['RA_SOURCE'] = np.deg2rad(self.ra)
-        self.dict['DEC_SOURCE'] = np.deg2rad(self.dec)
-        self.dict['starECI'] = tools.celestial_to_geocentric(self.dict['RA_SOURCE'], self.dict['DEC_SOURCE'])
-        self.dict['starECI_proj'] = None
-        self.dict['msis_density_string'] = 'NO_DENSITY_MODEL_YET'
-
-        # ORBITAL MODEL
-        self.dict['inclination'] = 180 * np.random.randf()
-        
-
-        # for simulated Horizon Crossings, we choose an arbitary point in the orbit to correspond to the epoch
 
 
