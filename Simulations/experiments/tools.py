@@ -59,3 +59,9 @@ def proj_on_orbit(r_source, h_unit):
     r_prime_source = r_prime_source / norm(r_prime_source)  # normalize the vector
     return r_prime_source
 
+# function to compute line of sight vector at a given position
+def line_of_sight(sat_position, star_position, n_list):
+    return sat_position + n
+
+
+

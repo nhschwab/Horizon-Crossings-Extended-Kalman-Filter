@@ -70,4 +70,4 @@ def random():
 
 
 if __name__ == "__main__":
-    random()
+    crab()

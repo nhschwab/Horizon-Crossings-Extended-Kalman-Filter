@@ -4,6 +4,7 @@
 import numpy as np 
 import matplotlib.pyplot as plt
 import tools
+from astropy.table import Table
 
 from sim_xray_source import Xray_Source
 
@@ -97,12 +98,50 @@ class HCNM_Sim():
 
         return d
 
+    # method to generate a table consisting of times, positions, velocities 
+    # of simualted orbital trajectory
+    # output serves as simulated MKF file
+    def generate_MKF(self):
+        data = Table()
+        data['TIME'] = np.arange(0, self.T)
+        data['POSITION'] = self.positions.T
+        data['VELOCITY'] = (self.positions * self.OMEGA_ORB).T
+        return data
+
+    
+    # method to generate a table consisting of times and x-ray photon observation energy values
+    # output serves as simulated EVT file
+    def generate_EVT(self):
+        
+        # time array
+        t_array = np.arange(0, T, 1)
+
+        
+
+        # instantiate empty pi array
+        pi_array = []
+
+        # at each time step, generate a photon taken randomly from x-ray spectrum of simulated source
+        # FOR NOW, we are treating x-ray spectrum as gaussian distribution from 0 keV to 5 keV
+        for t in t_array:
+
+            photon = np.random.normal(loc=2.5, scale=1)
+
+            # count photon as an observation of its randomly assigned value [0, 1] falls
+            # below the optical depth value according to Beer's Law
+            rand_val = np.random.rand()
+
+            # compute optical depth for given energy value
+            tau = 
+
+
+
 
 
 if __name__ == "__main__":
     source = Xray_Source('simulated source')
     obj = HCNM_Sim(source)
-    obj.plot_orbit()
+    print(obj.generate_table())
 
 
 
