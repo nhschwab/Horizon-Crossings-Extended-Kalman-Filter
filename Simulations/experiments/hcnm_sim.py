@@ -116,7 +116,7 @@ class HCNM_Sim():
         # time array
         t_array = np.arange(0, T, 1)
 
-        
+
 
         # instantiate empty pi array
         pi_array = []
@@ -132,7 +132,7 @@ class HCNM_Sim():
             rand_val = np.random.rand()
 
             # compute optical depth for given energy value
-            tau = 
+            
 
 
 
