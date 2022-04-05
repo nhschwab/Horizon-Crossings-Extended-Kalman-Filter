@@ -165,7 +165,7 @@ class HCNM_Sim():
             # compute absorption probability from Beer's Law using numerical integration
             optical_depth = np.sum([density_list * cross_section * ds])
             tau = 2 * optical_depth
-            print(tau)
+            absorption_prob = np.exp(-tau)
 
             
             
