@@ -9,6 +9,7 @@ from scipy.interpolate import interp1d as interp1d
 
 from sim_xray_source import Xray_Source
 from LocateR0hc import LocateR0hc
+from xsects import BCM
 
 '''
 class: HCNM_Sim
@@ -105,7 +106,7 @@ class HCNM_Sim():
     # output serves as simulated MKF file
     def generate_MKF(self):
         data = Table()
-        data['TIME'] = np.arange(0, self.T)
+        data['TIME'] = np.arange(0, self.T, 0.001)
         data['POSITION'] = self.positions.T
         data['VELOCITY'] = (self.positions * self.OMEGA_ORB).T
         return data
@@ -128,7 +129,9 @@ class HCNM_Sim():
         # time array, define as t0 + 300 seconds
         r0hc = LocateR0hc(observation_dict=hc_data, earth_shape_string='sphere', r_model_type='circle')
         ind = np.argmin(np.sum((self.positions.T - r0hc.r0_hc)**2, axis=1))
-        t_array = np.arange(0, self.T)[ind: ind+300]
+        t1 = np.arange(0, self.T, 0.001)[ind]
+        t2 = np.arange(0, self.T, 0.001)[ind+int(300/0.001)]
+        t_array = np.arange(t1, t2, 0.001)
 
         # instantiate empty pi array
         pi_array = []
@@ -136,18 +139,26 @@ class HCNM_Sim():
         # step size in los
         ds = 0.5 # km
 
+        # atmospheric constituent mix ratio
+        mix_N = 0.78
+        mix_O = 0.21
+        mix_Ar = 0.01
+        mix_C = 0.0
+
+        absorption_array = []
+
         # at each time step, generate a photon taken randomly from x-ray spectrum of simulated source
         # FOR NOW, we are treating x-ray spectrum as gaussian distribution from 0 keV to 5 keV
         for i, t in enumerate(t_array):
-
-            photon = np.random.normal(loc=2.5, scale=1)
+            # print(str(t) + '/' + str(t2))
+            photon_keV = np.random.normal(loc=2.5, scale=1)
 
             # count photon as an observation of its randomly assigned value [0, 1] falls
             # below the optical depth value according to Beer's Law
             rand_val = np.random.rand()
 
             # compute LOS vector at each time
-            los = tools.line_of_sight(self.positions.T[ind: ind+300][i], self.starECI, ds)
+            los = tools.line_of_sight(self.positions.T[ind: ind+int(300/0.001)][i], self.starECI, ds)
             
             # compute radial altitude of point on LOS vector 
             los_mag = np.sqrt(los[:, 0]**2 + los[:, 1]**2 + los[:, 2]**2)
@@ -162,10 +173,23 @@ class HCNM_Sim():
             # compute atmopsheric densities at each altitude in altitude_list from msis model
             density_list = f(altitude_list)
 
+            # define cross section using BCM class
+            cross_section = BCM.get_total_xsect(photon_keV, mix_N, mix_O, mix_Ar, mix_C)
+
             # compute absorption probability from Beer's Law using numerical integration
             optical_depth = np.sum([density_list * cross_section * ds])
             tau = 2 * optical_depth
             absorption_prob = np.exp(-tau)
+
+            # count photon as measured if its random value falls below absorption probability
+            # this corresponds to a probabilistic transmission
+            if rand_val < absorption_prob:
+                absorption_array.append(absorption_prob)
+            else:
+                absorption_array.append(None)
+        
+        plt.plot(t_array, absorption_array, '.')
+        plt.show()
 
             
             
@@ -179,7 +203,7 @@ class HCNM_Sim():
 if __name__ == "__main__":
     source = Xray_Source('simulated source')
     obj = HCNM_Sim(source)
-    print(obj.generate_MKF())
+    # print(obj.generate_MKF())
     obj.generate_EVT()
 
 
