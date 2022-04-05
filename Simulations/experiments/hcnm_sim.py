@@ -5,8 +5,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import tools
 from astropy.table import Table
+from scipy.interpolate import interp1d as interp1d
 
 from sim_xray_source import Xray_Source
+from LocateR0hc import LocateR0hc
 
 '''
 class: HCNM_Sim
@@ -112,18 +114,31 @@ class HCNM_Sim():
     # method to generate a table consisting of times and x-ray photon observation energy values
     # output serves as simulated EVT file
     def generate_EVT(self):
+
+        # read in atmospheric densities from msis model
+        msis_data = np.array([x.split(',') for x in open('/Users/noahhschwab/Desktop/Thesis Work/Horizon-Crossings-Extended-Kalman-Filter/Simulations/experiments/msis00_v4641_feb3.txt').readlines()])
+        msis_alt_list = msis_data[:, 0].astype('float64')
+        msis_density_list = msis_data[:, 1].astype('float64')
+
+        # use scipy interp1d to get function for evaluating at a given altitude
+        f = interp1d(msis_alt_list, msis_density_list, kind='cubic')
+
+        hc_data = self.generate_dict()
         
-        # time array
-        t_array = np.arange(0, T, 1)
-
-
+        # time array, define as t0 + 300 seconds
+        r0hc = LocateR0hc(observation_dict=hc_data, earth_shape_string='sphere', r_model_type='circle')
+        ind = np.argmin(np.sum((self.positions.T - r0hc.r0_hc)**2, axis=1))
+        t_array = np.arange(0, self.T)[ind: ind+300]
 
         # instantiate empty pi array
         pi_array = []
 
+        # step size in los
+        ds = 0.5 # km
+
         # at each time step, generate a photon taken randomly from x-ray spectrum of simulated source
         # FOR NOW, we are treating x-ray spectrum as gaussian distribution from 0 keV to 5 keV
-        for t in t_array:
+        for i, t in enumerate(t_array):
 
             photon = np.random.normal(loc=2.5, scale=1)
 
@@ -131,7 +146,30 @@ class HCNM_Sim():
             # below the optical depth value according to Beer's Law
             rand_val = np.random.rand()
 
-            # compute optical depth for given energy value
+            # compute LOS vector at each time
+            los = tools.line_of_sight(self.positions.T[ind: ind+300][i], self.starECI, ds)
+            
+            # compute radial altitude of point on LOS vector 
+            los_mag = np.sqrt(los[:, 0]**2 + los[:, 1]**2 + los[:, 2]**2)
+            altitude_list = los_mag - np.ones_like(los_mag) * tools.R_EARTH
+            
+            # last index of integration is when altitude is minimum, corresponds to half LOS
+            end_ind = np.argmin(altitude_list)
+
+            # redefine altitude list associated with half los
+            altitude_list = altitude_list[:end_ind]
+
+            # compute atmopsheric densities at each altitude in altitude_list from msis model
+            density_list = f(altitude_list)
+
+            # compute absorption probability from Beer's Law using numerical integration
+            optical_depth = np.sum([density_list * cross_section * ds])
+            tau = 2 * optical_depth
+            print(tau)
+
+            
+            
+            
             
 
 
@@ -141,7 +179,8 @@ class HCNM_Sim():
 if __name__ == "__main__":
     source = Xray_Source('simulated source')
     obj = HCNM_Sim(source)
-    print(obj.generate_table())
+    print(obj.generate_MKF())
+    obj.generate_EVT()
 
 
 

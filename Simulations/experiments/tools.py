@@ -60,8 +60,13 @@ def proj_on_orbit(r_source, h_unit):
     return r_prime_source
 
 # function to compute line of sight vector at a given position
-def line_of_sight(sat_position, star_position, n_list):
-    return sat_position + n
+def line_of_sight(sat_position, star_position, ds):
+    s_list = np.arange(0, 3000, ds) # array of km steps along LOS
+    s_list = s_list.reshape((len(s_list), 1))
+    starArray = np.ones((len(s_list), 3)) * star_position
+    satArray = np.ones((len(s_list), 3)) * sat_position
+    losArray = satArray + s_list * starArray 
+    return losArray
 
 
 
