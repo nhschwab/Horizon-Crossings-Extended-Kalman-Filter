@@ -129,9 +129,9 @@ class HCNM_Sim():
         # time array, define as t0 + 300 seconds
         r0hc = LocateR0hc(observation_dict=hc_data, earth_shape_string='sphere', r_model_type='circle')
         ind = np.argmin(np.sum((self.positions.T - r0hc.r0_hc)**2, axis=1))
-        t1 = np.arange(0, self.T, 0.001)[ind]
-        t2 = np.arange(0, self.T, 0.001)[ind+int(300/0.001)]
-        t_array = np.arange(t1, t2, 0.001)
+        t1 = np.arange(0, self.T, 0.01)[ind-int(100/0.01)]
+        t2 = np.arange(0, self.T, 0.01)[ind+int(300/0.01)]
+        t_array = np.arange(t1, t2, 0.01)
 
         # instantiate empty pi array
         pi_array = []
@@ -146,6 +146,9 @@ class HCNM_Sim():
         mix_C = 0.0
 
         absorption_array = []
+        absorption_array1 = []
+        absorption_array2 = []
+        absorption_array3 = []
 
         # at each time step, generate a photon taken randomly from x-ray spectrum of simulated source
         # FOR NOW, we are treating x-ray spectrum as gaussian distribution from 0 keV to 5 keV
@@ -158,7 +161,7 @@ class HCNM_Sim():
             rand_val = np.random.rand()
 
             # compute LOS vector at each time
-            los = tools.line_of_sight(self.positions.T[ind: ind+int(300/0.001)][i], self.starECI, ds)
+            los = tools.line_of_sight(self.positions.T[ind-int(100/0.01): ind+int(300/0.01)][i], self.starECI, ds)
             
             # compute radial altitude of point on LOS vector 
             los_mag = np.sqrt(los[:, 0]**2 + los[:, 1]**2 + los[:, 2]**2)
@@ -177,29 +180,49 @@ class HCNM_Sim():
             cross_section = BCM.get_total_xsect(photon_keV, mix_N, mix_O, mix_Ar, mix_C)
 
             # compute absorption probability from Beer's Law using numerical integration
-            optical_depth = np.sum([density_list * cross_section * ds])
+            optical_depth = np.sum([density_list * cross_section * ds * 10**5])
             tau = 2 * optical_depth
             absorption_prob = np.exp(-tau)
 
             # count photon as measured if its random value falls below absorption probability
             # this corresponds to a probabilistic transmission
             if rand_val < absorption_prob:
+
                 absorption_array.append(absorption_prob)
+
+                if (0.3 < photon_keV) and (photon_keV < 1.0):
+                    absorption_array1.append(absorption_prob)
+                    absorption_array2.append(None)
+                    absorption_array3.append(None)
+                elif (1.0 < photon_keV) and (photon_keV < 2.0):
+                    absorption_array1.append(None)
+                    absorption_array2.append(absorption_prob)
+                    absorption_array3.append(None)
+                elif (photon_keV > 2.0):
+                    absorption_array1.append(None)
+                    absorption_array2.append(None)
+                    absorption_array3.append(absorption_prob)
+                else:
+                    absorption_array1.append(None)
+                    absorption_array2.append(None)
+                    absorption_array3.append(None)
+
             else:
                 absorption_array.append(None)
+                absorption_array1.append(None)
+                absorption_array2.append(None)
+                absorption_array3.append(None)
         
-        plt.plot(t_array, absorption_array, '.')
+        plt.plot(t_array, absorption_array1, '.', label='0.3-1.0 keV')
+        plt.plot(t_array, absorption_array2, '.', label='1.0-2.0 keV')
+        plt.plot(t_array, absorption_array3, '.', label='2.0-10.0 keV')
+        plt.title('Simulated Horizon Crossing')
+        plt.xlabel('Time (sec since epoch of orbit)')
+        plt.ylabel('Normalized X-ray Transmittance')
+        plt.legend()
         plt.show()
 
             
-            
-            
-            
-
-
-
-
-
 if __name__ == "__main__":
     source = Xray_Source('simulated source')
     obj = HCNM_Sim(source)
