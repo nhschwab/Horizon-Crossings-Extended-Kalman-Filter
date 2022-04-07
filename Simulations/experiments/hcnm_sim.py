@@ -106,7 +106,7 @@ class HCNM_Sim():
     # output serves as simulated MKF file
     def generate_MKF(self):
         data = Table()
-        data['TIME'] = np.arange(0, self.T, 0.001)
+        data['TIME'] = np.arange(0, self.T, 0.01)
         data['POSITION'] = self.positions.T
         data['VELOCITY'] = (self.positions * self.OMEGA_ORB).T
         return data
@@ -187,47 +187,27 @@ class HCNM_Sim():
             # count photon as measured if its random value falls below absorption probability
             # this corresponds to a probabilistic transmission
             if rand_val < absorption_prob:
-
-                absorption_array.append(absorption_prob)
-
-                if (0.3 < photon_keV) and (photon_keV < 1.0):
-                    absorption_array1.append(absorption_prob)
-                    absorption_array2.append(None)
-                    absorption_array3.append(None)
-                elif (1.0 < photon_keV) and (photon_keV < 2.0):
-                    absorption_array1.append(None)
-                    absorption_array2.append(absorption_prob)
-                    absorption_array3.append(None)
-                elif (photon_keV > 2.0):
-                    absorption_array1.append(None)
-                    absorption_array2.append(None)
-                    absorption_array3.append(absorption_prob)
-                else:
-                    absorption_array1.append(None)
-                    absorption_array2.append(None)
-                    absorption_array3.append(None)
-
+                pi_array.append(photon_keV * 100)
             else:
-                absorption_array.append(None)
-                absorption_array1.append(None)
-                absorption_array2.append(None)
-                absorption_array3.append(None)
+                pi_array.append(0)
         
-        plt.plot(t_array, absorption_array1, '.', label='0.3-1.0 keV')
-        plt.plot(t_array, absorption_array2, '.', label='1.0-2.0 keV')
-        plt.plot(t_array, absorption_array3, '.', label='2.0-10.0 keV')
-        plt.title('Simulated Horizon Crossing')
-        plt.xlabel('Time (sec since epoch of orbit)')
-        plt.ylabel('Normalized X-ray Transmittance')
-        plt.legend()
-        plt.show()
+        # create time and pi arrays, and return table object
+        time = np.arange(0, self.T, 0.01)
+        pi = np.zeros_like(time)
+        pi[ind-int(100/0.01):ind+int(300/0.01)] = pi_array
+        
+        data = Table()
+        data['TIME'] = time
+        data['PI'] = pi
+
+        return data
 
             
 if __name__ == "__main__":
     source = Xray_Source('simulated source')
     obj = HCNM_Sim(source)
     # print(obj.generate_MKF())
-    obj.generate_EVT()
+    print(obj.generate_EVT())
 
 
 

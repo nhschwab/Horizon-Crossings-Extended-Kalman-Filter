@@ -2,6 +2,7 @@
 
 # libraries
 import numpy as np
+from astropy.io import ascii
 from sim_xray_source import Xray_Source
 from hcnm_sim import HCNM_Sim
 from LocateR0hc import LocateR0hc
@@ -54,20 +55,15 @@ def random():
 
     # instantiate HCNM Sim object
     obj = HCNM_Sim(source)
-    hc_data = obj.generate_dict()
 
-    # locate grazing point of source in orbit
-    r0hc = LocateR0hc(observation_dict=hc_data, earth_shape_string='sphere', r_model_type='circle')
-    print(f"r0 = {r0hc.r0_hc}")
+    # generate simulated event file
+    data = obj.generate_EVT()
 
-    # plot orbital trajectory and r0
-    obj.plot_orbit(r0hc.r0_hc)
+    # write event file
+    ascii.write(data, 'sim_events.dat')
 
     return None
 
 
-
-
-
 if __name__ == "__main__":
-    crab()
+    random()
