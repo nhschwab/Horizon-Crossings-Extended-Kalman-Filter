@@ -76,8 +76,8 @@ class HCNM_Sim():
         fig = plt.figure(figsize=(4,4))
         ax = fig.add_subplot(111, projection='3d')
         ax.plot(self.positions[0], self.positions[1], self.positions[2])
-        ax.scatter(r0[0], r0[1], r0[2], c='red', label='r0')
-        ax.set_title(f"Simulated Orbital Trajectory and Computed r0 of {self.source_name}")
+        ax.scatter(r0[0], r0[1], r0[2], c='red', label=r'$r_0$')
+        ax.set_title(rf"Simulated Orbital Trajectory ($i = {np.round(self.inclination, 2)}, \Omega = {np.round(self.raan, 2)} $)")
         ax.set_xlabel("km")
         ax.set_ylabel("km")
         ax.set_zlabel("km")
@@ -129,7 +129,7 @@ class HCNM_Sim():
         # time array, define as t0 + 300 seconds
         r0hc = LocateR0hc(observation_dict=hc_data, earth_shape_string='sphere', r_model_type='circle')
         ind = np.argmin(np.sum((self.positions.T - r0hc.r0_hc)**2, axis=1))
-        t1 = np.arange(0, self.T, 0.01)[ind-int(100/0.01)]
+        t1 = np.arange(0, self.T, 0.01)[ind-int(200/0.01)]
         t2 = np.arange(0, self.T, 0.01)[ind+int(300/0.01)]
         t_array = np.arange(t1, t2, 0.01)
 
@@ -161,7 +161,7 @@ class HCNM_Sim():
             rand_val = np.random.rand()
 
             # compute LOS vector at each time
-            los = tools.line_of_sight(self.positions.T[ind-int(100/0.01): ind+int(300/0.01)][i], self.starECI, ds)
+            los = tools.line_of_sight(self.positions.T[ind-int(200/0.01): ind+int(300/0.01)][i], self.starECI, ds)
             
             # compute radial altitude of point on LOS vector 
             los_mag = np.sqrt(los[:, 0]**2 + los[:, 1]**2 + los[:, 2]**2)
@@ -172,6 +172,11 @@ class HCNM_Sim():
 
             # redefine altitude list associated with half los
             altitude_list = altitude_list[:end_ind]
+            
+            # map negative altitude values to 0 km
+            for j, alt in enumerate(altitude_list):
+                if alt < 0:
+                    altitude_list[j] = 0
 
             # compute atmopsheric densities at each altitude in altitude_list from msis model
             density_list = f(altitude_list)
@@ -194,7 +199,7 @@ class HCNM_Sim():
         # create time and pi arrays, and return table object
         time = np.arange(0, self.T, 0.01)
         pi = np.zeros_like(time)
-        pi[ind-int(100/0.01):ind+int(300/0.01)] = pi_array
+        pi[ind-int(200/0.01):ind+int(300/0.01)] = pi_array
         
         data = Table()
         data['TIME'] = time
@@ -206,8 +211,11 @@ class HCNM_Sim():
 if __name__ == "__main__":
     source = Xray_Source('simulated source')
     obj = HCNM_Sim(source)
+    hc_data = obj.generate_dict()
+    r0hc = LocateR0hc(observation_dict=hc_data, earth_shape_string='sphere', r_model_type='circle')
+    obj.plot_orbit(r0hc.r0_hc)
     # print(obj.generate_MKF())
-    print(obj.generate_EVT())
+    # print(obj.generate_EVT())
 
 
 

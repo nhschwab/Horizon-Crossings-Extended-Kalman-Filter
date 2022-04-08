@@ -36,15 +36,13 @@ def crab():
     source.dec = np.deg2rad(22.01453)
 
     # instantiate HCNM Sim object
-    obj = HCNM_Sim(source, inclination=51.6, raan=67.99627740036111)
-    hc_data = obj.generate_dict()
+    obj = HCNM_Sim(source)
 
-    # locate grazing point of source in orbit
-    r0hc = LocateR0hc(observation_dict=hc_data, earth_shape_string='sphere', r_model_type='circle')
-    print(f"r0 = {r0hc.r0_hc}")
+    # generate simulated event file
+    data = obj.generate_EVT()
 
-    # plot orbital trajectory and r0
-    obj.plot_orbit(r0hc.r0_hc)
+    # write event file
+    ascii.write(data, 'crab_events.dat')
 
     return None
 
@@ -60,10 +58,10 @@ def random():
     data = obj.generate_EVT()
 
     # write event file
-    ascii.write(data, 'sim_events.dat')
+    ascii.write(data, 'sim_events3.dat')
 
     return None
 
 
 if __name__ == "__main__":
-    random()
+    crab()
