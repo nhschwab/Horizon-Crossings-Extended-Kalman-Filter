@@ -17,14 +17,12 @@ def v4641():
 
     # instantiate HCNM Sim object
     obj = HCNM_Sim(source, inclination=51.6, raan=293.1)
-    hc_data = obj.generate_dict()
 
-    # locate grazing point of source in orbit
-    r0hc = LocateR0hc(observation_dict=hc_data, earth_shape_string='sphere', r_model_type='circle')
-    print(f"r0 = {r0hc.r0_hc}")
+    # generate simulated event file
+    data = obj.generate_EVT()
 
-    # plot orbital trajectory and r0
-    obj.plot_orbit(r0hc.r0_hc)
+    # write event file
+    ascii.write(data, 'v4641_events.dat')
 
     return None
 
@@ -64,4 +62,4 @@ def random():
 
 
 if __name__ == "__main__":
-    crab()
+    v4641()
