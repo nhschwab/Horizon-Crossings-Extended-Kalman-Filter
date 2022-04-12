@@ -34,7 +34,7 @@ def crab():
     source.dec = np.deg2rad(22.01453)
 
     # instantiate HCNM Sim object
-    obj = HCNM_Sim(source)
+    obj = HCNM_Sim(source, inclination=51.7, raan=68.0)
 
     # generate simulated event file
     data = obj.generate_EVT()
