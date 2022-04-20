@@ -106,7 +106,7 @@ class HCNM_Sim():
     # output serves as simulated MKF file
     def generate_MKF(self):
         data = Table()
-        data['TIME'] = np.arange(0, self.T, 0.01)
+        data['TIME'] = np.arange(0, self.T, 0.005)
         data['POSITION'] = self.positions.T
         data['VELOCITY'] = (self.positions * self.OMEGA_ORB).T
         return data
@@ -129,9 +129,9 @@ class HCNM_Sim():
         # time array, define as t0 + 300 seconds
         r0hc = LocateR0hc(observation_dict=hc_data, earth_shape_string='sphere', r_model_type='circle')
         ind = np.argmin(np.sum((self.positions.T - r0hc.r0_hc)**2, axis=1))
-        t1 = np.arange(0, self.T, 0.01)[ind-int(200/0.01)]
-        t2 = np.arange(0, self.T, 0.01)[ind+int(300/0.01)]
-        t_array = np.arange(t1, t2, 0.01)
+        t1 = np.arange(0, self.T, 0.005)[ind]
+        t2 = np.arange(0, self.T, 0.005)[ind+int(300/0.005)]
+        t_array = np.arange(t1, t2, 0.005)
 
         # instantiate empty pi array
         pi_array = []
@@ -145,7 +145,6 @@ class HCNM_Sim():
         mix_Ar = 0.01
         mix_C = 0.0
 
-        absorption_array = []
         absorption_array1 = []
         absorption_array2 = []
         absorption_array3 = []
@@ -161,7 +160,7 @@ class HCNM_Sim():
             rand_val = np.random.rand()
 
             # compute LOS vector at each time
-            los = tools.line_of_sight(self.positions.T[ind-int(200/0.01): ind+int(300/0.01)][i], self.starECI, ds)
+            los = tools.line_of_sight(self.positions.T[ind: ind+int(300/0.005)][i], self.starECI, ds)
             
             # compute radial altitude of point on LOS vector 
             los_mag = np.sqrt(los[:, 0]**2 + los[:, 1]**2 + los[:, 2]**2)
@@ -197,9 +196,9 @@ class HCNM_Sim():
                 pi_array.append(0)
         
         # create time and pi arrays, and return table object
-        time = np.arange(0, self.T, 0.01)
+        time = np.arange(0, self.T, 0.005)
         pi = np.zeros_like(time)
-        pi[ind-int(200/0.01):ind+int(300/0.01)] = pi_array
+        pi[ind:ind+int(300/0.005)] = pi_array
         
         data = Table()
         data['TIME'] = time

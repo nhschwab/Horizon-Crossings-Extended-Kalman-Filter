@@ -43,7 +43,7 @@ def get_Q_matrix(i, raan, aop):
     return Q
 
 def get_position_from_keplerian(omega, Q, R, T):
-    t_array = np.arange(0, T, 0.01)
+    t_array = np.arange(0, T, 0.005)
     
     perifocal_positions = R * np.array([[np.cos(omega * t) for t in t_array], 
                                     [np.sin(omega * t) for t in t_array], 
